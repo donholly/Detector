@@ -37,9 +37,6 @@ class FaceDetectionViewController: UIViewController {
         if !button.isSelected {
             button.setTitle("Start", for: .normal)
             FaceDetectionService.shared.cancelAllJobs()
-            results.removeAll()
-            faces.removeAll()
-            collectionView.reloadData()
             return
         }
         
@@ -47,6 +44,10 @@ class FaceDetectionViewController: UIViewController {
             assertionFailure("Face Detection Engine not set")
             return
         }
+        
+        results.removeAll()
+        faces.removeAll()
+        collectionView.reloadData()
         
         button.setTitle("Stop", for: .normal)
         
