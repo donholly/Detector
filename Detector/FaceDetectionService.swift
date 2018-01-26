@@ -240,8 +240,8 @@ class FaceDetectionService {
     }
     
     func cancelAllJobs() {
-        internalQueue.async {
-            detectionOperationQueue.cancelAllOperations()
+        internalQueue.async { [weak self] in
+            self?.detectionOperationQueue.cancelAllOperations()
         }
     }
 }
