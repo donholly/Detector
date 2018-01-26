@@ -25,8 +25,7 @@ class FaceDetectionOperation: AsynchronousOperation {
         self.completion = completion
     }
     
-    override func start() {
-        super.start()
+    override func execute() {
         
         let options = PHImageRequestOptions()
         options.isNetworkAccessAllowed = networkAccessAllowed

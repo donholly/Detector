@@ -9,49 +9,89 @@
 import Foundation
 
 class AsynchronousOperation: Operation {
-    override var isAsynchronous: Bool { return true }
-    override var isExecuting: Bool { return state == .executing }
-    override var isFinished: Bool { return state == .finished }
     
-    var state = State.ready {
-        willSet {
-            willChangeValue(forKey: state.keyPath)
-            willChangeValue(forKey: newValue.keyPath)
+    // MARK: - Properties
+    private let stateQueue = DispatchQueue(
+        label: "com.calebd.operation.state",
+        attributes: .concurrent)
+    
+    private var rawState = OperationState.ready
+    
+    @objc private dynamic var state: OperationState {
+        get {
+            return stateQueue.sync(execute: { rawState })
         }
-        didSet {
-            didChangeValue(forKey: state.keyPath)
-            didChangeValue(forKey: oldValue.keyPath)
-        }
-    }
-    
-    enum State: String {
-        case ready = "Ready"
-        case executing = "Executing"
-        case finished = "Finished"
-        fileprivate var keyPath: String { return "is" + self.rawValue }
-    }
-    
-    override func start() {
-        if self.isCancelled {
-            state = .finished
-        } else {
-            state = .ready
-            main()
+        set {
+            willChangeValue(forKey: "state")
+            stateQueue.sync(
+                flags: .barrier,
+                execute: { rawState = newValue })
+            didChangeValue(forKey: "state")
         }
     }
     
-    override func main() {
-        if self.isCancelled {
-            state = .finished
-        } else {
-            state = .executing
-        }
+    public final override var isReady: Bool {
+        return state == .ready && super.isReady
     }
     
-    func finish() {
-        if self.isCancelled == false {
-            state = .finished
+    public final override var isExecuting: Bool {
+        return state == .executing
+    }
+    
+    public final override var isFinished: Bool {
+        return state == .finished
+    }
+    
+    public final override var isAsynchronous: Bool {
+        return true
+    }
+    
+    
+    // MARK: - NSObject
+    @objc private dynamic class func keyPathsForValuesAffectingIsReady() -> Set<String> {
+        return ["state"]
+    }
+    
+    @objc private dynamic class func keyPathsForValuesAffectingIsExecuting() -> Set<String> {
+        return ["state"]
+    }
+    
+    @objc private dynamic class func keyPathsForValuesAffectingIsFinished() -> Set<String> {
+        return ["state"]
+    }
+    
+    
+    // MARK: - Foundation.Operation
+    public override final func start() {
+        super.start()
+        
+        if isCancelled {
+            finish()
+            return
         }
+        
+        state = .executing
+        execute()
+    }
+    
+    
+    // MARK: - Public
+    /// Subclasses must implement this to perform their work and they must not
+    /// call `super`. The default implementation of this function throws an
+    /// exception.
+    open func execute() {
+        fatalError("Subclasses must implement `execute`.")
+    }
+    
+    /// Call this function after any work is done or after a call to `cancel()`
+    /// to move the operation into a completed state.
+    public final func finish() {
+        state = .finished
     }
 }
 
+@objc private enum OperationState: Int {
+    case ready
+    case executing
+    case finished
+}
