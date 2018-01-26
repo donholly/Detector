@@ -78,9 +78,9 @@ class FaceDetectionViewController: UIViewController {
                     
                     let duration = Date().timeIntervalSince(start)
                     
-                    self?.photosScannedValueLabel.text =   String(format: "Photos Scanned: %d", strongSelf.results.count)
-                    self?.photosPerSecondValueLabel.text = String(format: "Photos Per Second: %3.2f", Double(strongSelf.results.count) / duration)
-                    self?.facesPerSecondValueLabel.text =  String(format: "Faces Per Second: %3.2f", Double(strongSelf.faces.count) / duration)
+                    self?.photosScannedValueLabel.text =   String(format: "Photos: %d", strongSelf.results.count)
+                    self?.photosPerSecondValueLabel.text = String(format: "Photos / s: %3.2f", Double(strongSelf.results.count) / duration)
+                    self?.facesPerSecondValueLabel.text =  String(format: "Faces / s: %3.2f", Double(strongSelf.faces.count) / duration)
                     
                 } else {
                     print("No faces :(")
